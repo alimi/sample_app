@@ -208,11 +208,6 @@ describe UsersController do
         put :update, :id => @user, :user => @attr
         response.should have_selector("title", :content => "Edit user")
       end
-
-      it "should render the 'new' page" do
-        post :create, :user => @attr
-        response.should render_template('new')
-      end
     end
 
     describe "success" do
@@ -278,6 +273,11 @@ describe UsersController do
   describe "DELETE 'destroy'" do
     before(:each) do
       @user = Factory(:user)
+
+      @users = [@user]
+      29.times do
+        @users << Factory(:user, :email => Factory.next(:email))
+      end
     end
 
     describe "as a non-signed-in user" do
@@ -293,12 +293,21 @@ describe UsersController do
         delete :destroy, :id => @user
         response.should redirect_to(root_path)
       end
+  
+      it "should not have delete links" do
+        test_sign_in(@user)
+        get :index
+
+        @users.each do |user|
+          response.should_not have_selector("a", :href => user_path(user), :content => "delete")
+        end
+      end
     end
 
     describe "as an admin user" do
       before(:each) do
-        admin = Factory(:user, :email => "admin@example.com", :admin => true)
-        test_sign_in(admin)
+        @admin = Factory(:user, :email => "admin@example.com", :admin => true)
+        test_sign_in(@admin)
       end
 
       it "should destroy the user" do
@@ -310,6 +319,22 @@ describe UsersController do
       it "should redirect to the users page" do
         delete :destroy, :id => @user
         response.should redirect_to(users_path)
+      end
+
+      it "should have delete links" do
+        get :index
+
+        @users.each do |user|
+          response.should have_selector("a", :href => user_path(user), :content => "delete")
+        end
+      end
+      
+      it "should not destroy itself" do
+        lambda do
+         delete :destroy, :id => @admin
+        end.should_not change(User, :count).by(-1)
+
+        flash[:notice].should =~ /cannot delete yourself/i
       end
     end
   end
