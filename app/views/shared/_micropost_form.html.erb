@@ -1,8 +1,11 @@
 <%= form_for @micropost do |f| %>
   <%= render 'shared/error_messages', :object => f.object %>
   <div class="field">
-    <%= f.text_area :content %>
+    <%= f.text_area :content, 
+        :onKeyDown => "textCounter(this.form.micropost_content, this.form.remLen)", 
+        :onKeyUp => "textCounter(this.form.micropost_content, this.form.remLen)" %>
   </div>
+  <input readonly type=text id=remLen size=3 maxlength=3 value="140"> characters left
   <div class="actions">
     <%= f.submit "Submit" %>
   </div>

@@ -17,6 +17,28 @@ describe PagesController do
        get 'home'
        response.should have_selector("title", :content => @base_title + " | Home")
     end
+
+    describe "for signed-in users" do
+      before(:each) do 
+        @user = test_sign_in(Factory(:user))
+      end
+
+      it "should show the user's microposts" do
+        get 'home'
+        response.should have_selector("span", :class => "microposts", :content => "micropost")
+      end
+
+      it "should show 0 microposts" do
+        get 'home'
+        response.should have_selector("span", :class => "microposts", :content => "microposts")
+      end
+
+      it "should show 1 micropost" do
+        @mp1 = Factory(:micropost, :user => @user)
+        get 'home'
+        response.should_not have_selector("span", :class => "microposts", :content => "microposts")
+      end
+    end
   end
 
   describe "GET 'contact'" do
