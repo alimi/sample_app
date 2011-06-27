@@ -9,6 +9,7 @@ class MicropostsController < ApplicationController
       redirect_to root_path
     else
       @feed_items = []
+      @user = current_user
       render 'pages/home'
     end
   end
